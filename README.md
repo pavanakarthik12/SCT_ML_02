@@ -1,67 +1,47 @@
-# K-Means Clustering for Retail Customers
+# SKILLCRAFT TASK 02 MACHINE LEARNING
 
-## Overview
-This small project provides a reusable Python script to cluster retail customers based on their purchase history using K-Means. It loads a CSV (defaults to `Mall_Customers.csv`), selects numeric purchase-related features, preprocesses and scales them, suggests an appropriate number of clusters using elbow and silhouette diagnostics, fits K-Means, and writes cluster assignments to a CSV.
+## Problem statement
+Group retail customers into meaningful segments using unsupervised clustering so the business can target marketing, offers, and retention strategies. We use the provided `Mall_Customers.csv` which contains customer demographics and two core behavioral features: `Annual Income (k$)` and `Spending Score (1-100)`.
 
-## Files
-- `kmeans_clustering.py`: Main script to run clustering and diagnostics.
-- `requirements.txt`: Python dependencies.
+## What I built
+- `SCT_ML_02.py`: a high-level Python script that runs K-Means clustering on `Mall_Customers.csv`.
+  - Default behavior: uses `Annual Income (k$)` and `Spending Score (1-100)`.
+  - Prints cluster counts, cluster centroids (mean income and spending score), and the first 20 assignments.
+  - Optional: save cluster assignments to CSV with `--save`.
 
-## Installation
-Create a virtual environment and install dependencies:
+## Approach (high level)
+1. Load `Mall_Customers.csv`.
+2. Select numeric features relevant to purchase behavior: `Annual Income (k$)` and `Spending Score (1-100)`.
+3. Standardize features with `StandardScaler` to make clustering insensitive to scale.
+4. Run `KMeans` with a user-specified number of clusters `k` (default 5).
+5. Present cluster counts and centroid values (converted back into original units) so the business can interpret each segment.
+
+## How to run
+From PowerShell in the project folder:
 
 ```powershell
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+pip install --upgrade pip
+pip install pandas scikit-learn numpy
+python SCT_ML_02.py --csv Mall_Customers.csv --k 5 --save --out-prefix mall_kmeans
 ```
 
-## Usage
-Basic usage (defaults expect `Mall_Customers.csv` in the same folder):
+- `--save` will write `{out-prefix}_clusters.csv` containing the original rows plus a `Cluster` column.
+- If you only want to print results without saving, omit `--save`.
 
-```powershell
-python kmeans_clustering.py --plot --save-model
-```
+## Example output (what to expect)
+- Cluster counts: a dictionary mapping cluster id -> number of customers.
+- Cluster centroids: table showing mean `Annual Income (k$)` and mean `Spending Score (1-100)` per cluster.
+- First 20 assignments: a small sample of rows with assigned cluster labels.
 
-Specify a CSV and columns to use (comma-separated):
+## Libraries used
+- `pandas` and `numpy` for data handling.
+- `scikit-learn` for `StandardScaler` and `KMeans`.
 
-```powershell
-python kmeans_clustering.py --csv data/customers.csv --columns "Annual Income (k$),Spending Score (1-100)" --plot
-```
+## Next steps / suggestions
+- Automatically choose `k` using elbow or silhouette methods and show recommended values.
+- Add more features for richer segmentation (age, gender, derived recency/frequency/monetary features if available).
+- Persist the scaler and model for use in production scoring of new customers.
+- Visualize clusters in 2D with labels and centroids for stakeholder presentations.
 
-Force a specific `k`:
-
-```powershell
-python kmeans_clustering.py --k 5 --csv Mall_Customers.csv
-```
-
-Outputs:
-- `kmeans_output_clusters.csv`: original rows with an added `Cluster` column (prefix can be changed with `--out-prefix`).
-- `kmeans_output_elbow_silhouette.png` (if `--plot` used): diagnostic plot showing inertia and silhouette scores across k.
-- `kmeans_output_kmeans.joblib` (if `--save-model` used): saved model + scaler + selected feature list.
-
-## What we used and why
-- Data loading: `pandas` for CSV reading and easy dataframe manipulation.
-- Numeric feature selection: we automatically select numeric columns (dropping ID-like fields). You can override with `--columns`.
-- Missing values: rows with missing values in selected features are dropped (simple, transparent approach). For production you'd consider imputation.
-- Scaling: `StandardScaler` from `scikit-learn` to standardize features before K-Means (important because K-Means is distance-based).
-- K-Means: `sklearn.cluster.KMeans` for clustering. `n_init='auto'` lets scikit-learn choose a sensible default for stability.
-- Diagnostics:
-  - Elbow (inertia): shows how within-cluster sum-of-squares decreases with k.
-  - Silhouette score: measures how well-separated clusters are. We prefer silhouette when it's computable.
-- Persistence: `joblib` to save fitted model and scaler for later use.
-
-## How to choose k (short)
-- Run without `--k` and with `--plot`. Examine the elbow plot for the point where inertia decrease slows.
-- Check silhouette scores: the k with the highest silhouette is often a good choice.
-- Use domain knowledge (business meaning of clusters) to finalize the choice.
-
-## Next steps / Improvements
-- Add robust missing-value handling (imputation), categorical feature encoding, and feature engineering from transaction histories.
-- Persist preprocessing pipeline (e.g., `sklearn.pipeline`) so you can transform new customers consistently.
-- Add unit tests, a small sample dataset, and a notebook for exploratory analysis and interactive tuning.
-
----
-If you want, I can also:
-- Create an example Jupyter notebook demonstrating clustering on your `Mall_Customers.csv`.
-- Add imputation or encode categorical data.
-- Commit these files to git and run a quick test run on the CSV you have.
+If you want, I can run the script here and show the live output, or save a CSV summary of clusters. Let me know which you prefer.
